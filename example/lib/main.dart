@@ -1,9 +1,8 @@
-
 import 'package:animated_linear_step_indicator/animated_linear_step_indicator.dart';
 import 'package:flutter/material.dart';
 
 void main(){
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 enum DemoStages { created, precessed, sent, completed }
@@ -81,7 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
               DemoStages.completed: 'completed'
             },
             stagesColors: const {
-              DemoStages.created : Colors.yellow,
+              DemoStages.created: Colors.yellow,
               DemoStages.precessed: Colors.orange,
               DemoStages.sent: Colors.blue,
               DemoStages.completed: Colors.green
@@ -91,10 +90,10 @@ class _MyHomePageState extends State<MyHomePage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              TextButton(onPressed: (){setState(() { _stage = DemoStages.created; });}, child: Text("created")),
-              TextButton(onPressed: (){setState(() { _stage = DemoStages.precessed; });}, child: Text("precessed")),
-              TextButton(onPressed: (){setState(() { _stage = DemoStages.sent; });}, child: Text("sent")),
-              TextButton(onPressed: (){setState(() { _stage = DemoStages.completed; });}, child: Text("completed")),
+              TextButton(onPressed: (){setState(() { _stage = DemoStages.created; });}, child: const Text("created")),
+              TextButton(onPressed: (){setState(() { _stage = DemoStages.precessed; });}, child: const Text("precessed")),
+              TextButton(onPressed: (){setState(() { _stage = DemoStages.sent; });}, child: const Text("sent")),
+              TextButton(onPressed: (){setState(() { _stage = DemoStages.completed; });}, child: const Text("completed")),
             ],
           )
         ],
