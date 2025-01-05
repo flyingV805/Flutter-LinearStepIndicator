@@ -3,6 +3,10 @@
 LinearStepIndicator is a customizable and animated Flutter widget that visually represents progress through multiple steps or stages in a linear format. 
 It is ideal for workflows, processes, or tracking milestones with smooth transitions between steps.
 
+<br/>
+<br/>
+<img src="/decor/demo.gif" width="400" />
+
 #### The package will be added to pub.dev a little later
 
 Just add the package to your project's dependencies:
