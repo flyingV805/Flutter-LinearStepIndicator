@@ -1,4 +1,3 @@
-import 'dart:collection';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
@@ -8,15 +7,13 @@ class StagedLine<T extends Enum> extends StatefulWidget {
   final Map<T, String> stagesNames;
   final Map<T, Color>? stagesColors;
   final Duration animationDuration;
-  //final Map<T, Color> stagesColors;
 
   const StagedLine({
     super.key,
     required this.stageState,
     required this.stagesNames,
     this.stagesColors,
-    this.animationDuration = const Duration(milliseconds: 450)
-    //this.stagesColors = {}
+    this.animationDuration = const Duration(milliseconds: 450),
   });
 
   @override
@@ -36,17 +33,20 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
   @override
   void initState() {
     super.initState();
-    previousStage = widget.stageState as T;
+
     currentStage = widget.stageState as T;
+
     _colors = widget.stagesColors?.map((stage, color) => MapEntry(stage.index, color)) ?? {};
 
     _controller = AnimationController(
-      vsync: this, // the SingleTickerProviderStateMixin
+      vsync: this,
       duration: widget.animationDuration,
     )..addListener((){ setState(() {}); });
 
     _animation = Tween<double>(begin: 0.0, end: 1.0)
         .animate(CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+
+    _controller.value = 1.0;
 
   }
 
@@ -116,7 +116,7 @@ class _StagedLinePainter extends CustomPainter {
     required this.colors,
   });
 
-  static const _activePointMultiplier = 1.25;
+  //static const _activePointMultiplier = 1.25;
 
   final pointPaint = Paint()
     ..isAntiAlias = true
@@ -144,9 +144,9 @@ class _StagedLinePainter extends CustomPainter {
 
     //background line
     canvas.drawLine(
-        Offset(0, offsetY),
-        Offset(painterWidth, offsetY),
-        linePaint..color = Colors.grey
+      Offset(0, offsetY),
+      Offset(painterWidth, offsetY),
+      linePaint..color = Colors.grey
     );
 
     //foreground line
@@ -163,21 +163,17 @@ class _StagedLinePainter extends CustomPainter {
       animationValue
     ) ?? Colors.green;
 
-    //debugPrint('offsetXCurrent $offsetXCurrent');
-    //debugPrint('offsetXPrevious $offsetXPrevious');
-    debugPrint('offsetX $offsetX painterWidth $painterWidth');
-
     canvas.drawLine(
-        Offset(0, offsetY),
-        Offset(offsetX, offsetY),
-        linePaint..color = foregroundLineColor
+      Offset(0, offsetY),
+      Offset(offsetX, offsetY),
+      linePaint..color = foregroundLineColor
     );
 
     //drawing stage circles, with animated in-out
     for(int i = 0; i < stageCount; i++){
 
       final isActive = currentStage == i;
-      final wasActive = previousStage == i;
+      final wasActive = (previousStage ?? -1) == i;
 
       final padLeft = i * stageLength;
       final offsetX = stageCenter + padLeft;
@@ -197,23 +193,29 @@ class _StagedLinePainter extends CustomPainter {
       if(wasActive){
         radius = pointRadius + activePointRadius * (1 - animationValue);
         color = Color.lerp(
-          Colors.green,
+          colors[previousStage] ?? Colors.green,
           Colors.grey,
           animationValue
         ) ?? Colors.grey;
       }
 
       if(i < currentStage){
-        color = colors[i] ?? Colors.green;
-        //color = Colors.green;
+        //color = colors[i] ?? Colors.green;
+
+        color = Color.lerp(
+            colors[previousStage] ?? Colors.green,
+            colors[currentStage] ?? Colors.green,
+            animationValue
+        ) ?? Colors.grey;
+
       }else{
 
       }
 
       canvas.drawCircle(
-          Offset(offsetX, offsetY),
-          radius,
-          pointPaint..color = color
+        Offset(offsetX, offsetY),
+        radius,
+        pointPaint..color = color
       );
 
     }
