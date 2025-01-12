@@ -26,9 +26,12 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
   late AnimationController _controller;
   late Animation<double> _animation;
   late Map<int, Color> _colors;
+  late _StagedLinePainter _painter;
 
   T? previousStage;
   T? currentStage;
+
+  late ValueNotifier<_PainterState> _shouldRepaint;
 
   @override
   void initState() {
@@ -38,15 +41,40 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
 
     _colors = widget.stagesColors?.map((stage, color) => MapEntry(stage.index, color)) ?? {};
 
+    _shouldRepaint = ValueNotifier<_PainterState>(
+      _PainterState(
+        animationValue: 1.0,
+        currentStage: currentStage!.index,
+        previousStage: previousStage?.index
+      )
+    );
+
     _controller = AnimationController(
       vsync: this,
       duration: widget.animationDuration,
-    )..addListener((){ setState(() {}); });
+    )..addListener((){
+      _shouldRepaint.value = _PainterState(
+        animationValue: _controller.value,
+        currentStage: currentStage!.index,
+        previousStage: previousStage?.index
+      );
+    });
 
     _animation = Tween<double>(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _controller, curve: Curves.fastOutSlowIn));
+      .animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: Curves.fastOutSlowIn
+        )
+    );
 
     _controller.value = 1.0;
+
+    _painter = _StagedLinePainter(
+      repaintState: _shouldRepaint,
+      stageCount: widget.stagesNames.length,
+      colors: _colors,
+    );
 
   }
 
@@ -73,13 +101,7 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
       children: [
         CustomPaint(
           size: const Size(double.infinity, 18),
-          painter: _StagedLinePainter(
-            animationValue: _animation.value,
-            stageCount: widget.stagesNames.length,
-            currentStage: widget.stageState.index,
-            previousStage: previousStage?.index,
-            colors: _colors
-          ),
+          painter: _painter,
         ),
         const SizedBox(height: 8),
         Row(
@@ -100,21 +122,34 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
 
 }
 
-class _StagedLinePainter extends CustomPainter {
+class _PainterState {
+
 
   double animationValue;
-  int stageCount;
   int currentStage;
   int? previousStage;
+
+  _PainterState({
+    required this.animationValue,
+    required this.currentStage,
+    required this.previousStage,
+  });
+
+}
+
+class _StagedLinePainter extends CustomPainter {
+
+  ValueNotifier<_PainterState> repaintState;
+  int stageCount;
   Map<int, Color> colors;
 
   _StagedLinePainter({
-    required this.animationValue,
+    required this.repaintState,
     required this.stageCount,
-    required this.currentStage,
-    required this.previousStage,
     required this.colors,
-  });
+  }): super(repaint: repaintState) {
+    debugPrint('PAINTER RECREATED');
+  }
 
   //static const _activePointMultiplier = 1.25;
 
@@ -149,18 +184,20 @@ class _StagedLinePainter extends CustomPainter {
       linePaint..color = Colors.grey
     );
 
-    //foreground line
-    final padLeftCurrent = currentStage * stageLength;
-    final offsetXCurrent = stageCenter + padLeftCurrent + (currentStage == stageCount - 1 ? stageCenter : 0);
+    final paintState = repaintState.value;
 
-    final padLeftPrevious = (previousStage ?? 0) * stageLength;
+    //foreground line
+    final padLeftCurrent = paintState.currentStage * stageLength;
+    final offsetXCurrent = stageCenter + padLeftCurrent + (paintState.currentStage == stageCount - 1 ? stageCenter : 0);
+
+    final padLeftPrevious = (paintState.previousStage ?? 0) * stageLength;
     final offsetXPrevious = stageCenter + padLeftPrevious;
 
-    final offsetX = lerpDouble(offsetXPrevious, offsetXCurrent, animationValue)?.toDouble() ?? 0;
+    final offsetX = lerpDouble(offsetXPrevious, offsetXCurrent, paintState.animationValue)?.toDouble() ?? 0;
     final foregroundLineColor = Color.lerp(
-      colors[previousStage] ?? Colors.grey,
-      colors[currentStage] ?? Colors.green,
-      animationValue
+      colors[paintState.previousStage] ?? Colors.grey,
+      colors[paintState.currentStage] ?? Colors.green,
+        paintState.animationValue
     ) ?? Colors.green;
 
     canvas.drawLine(
@@ -172,8 +209,8 @@ class _StagedLinePainter extends CustomPainter {
     //drawing stage circles, with animated in-out
     for(int i = 0; i < stageCount; i++){
 
-      final isActive = currentStage == i;
-      final wasActive = (previousStage ?? -1) == i;
+      final isActive = paintState.currentStage == i;
+      final wasActive = (paintState.previousStage ?? -1) == i;
 
       final padLeft = i * stageLength;
       final offsetX = stageCenter + padLeft;
@@ -182,30 +219,30 @@ class _StagedLinePainter extends CustomPainter {
       double radius = pointRadius;
 
       if(isActive){
-        radius = pointRadius + activePointRadius * animationValue;
+        radius = pointRadius + activePointRadius * paintState.animationValue;
         color = Color.lerp(
           Colors.grey,
           colors[i] ?? Colors.green,
-          animationValue
+            paintState.animationValue
         ) ?? Colors.grey;
       }
 
       if(wasActive){
-        radius = pointRadius + activePointRadius * (1 - animationValue);
+        radius = pointRadius + activePointRadius * (1 - paintState.animationValue);
         color = Color.lerp(
-          colors[previousStage] ?? Colors.green,
+          colors[paintState.previousStage] ?? Colors.green,
           Colors.grey,
-          animationValue
+            paintState.animationValue
         ) ?? Colors.grey;
       }
 
-      if(i < currentStage){
+      if(i < paintState.currentStage){
         //color = colors[i] ?? Colors.green;
 
         color = Color.lerp(
-            colors[previousStage] ?? Colors.green,
-            colors[currentStage] ?? Colors.green,
-            animationValue
+            colors[paintState.previousStage] ?? Colors.green,
+            colors[paintState.currentStage] ?? Colors.green,
+            paintState.animationValue
         ) ?? Colors.grey;
 
       }else{
@@ -224,7 +261,7 @@ class _StagedLinePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _StagedLinePainter oldDelegate) {
-    return oldDelegate.currentStage != currentStage;
+    return true;
   }
 
 }
