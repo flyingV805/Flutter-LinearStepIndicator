@@ -78,7 +78,7 @@ class StagedLine<T extends Enum> extends StatefulWidget {
 class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
-  late Animation<double> _animation;
+  //late Animation<double> _animation;
   late Map<int, Color> _colors;
   late _StagedLinePainter _painter;
 
@@ -114,7 +114,7 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
       );
     });
 
-    _animation = Tween<double>(begin: 0.0, end: 1.0)
+    Tween<double>(begin: 0.0, end: 1.0)
       .animate(
         CurvedAnimation(
           parent: _controller,
