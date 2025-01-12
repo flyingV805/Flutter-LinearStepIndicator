@@ -1,6 +1,60 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 
+/// Animated widget for displaying the current stages of a process.
+///
+/// The `StagedLine` class provides an easy way to visualize the current stage
+/// of a process. Each stage is represented by an enumeration (`Enum`) value and
+/// can be supplemented with a name and a color. Transitions between stages are
+/// accompanied by smooth animations, including color changes and resizing of
+/// the active stage marker.
+///
+/// ### Key Features:
+/// - Display stages of a process with labels.
+/// - Support for custom colors for each stage.
+/// - Smooth animations for transitions between stages.
+///
+/// ### Example Usage:
+///
+/// ```dart
+/// enum ProcessStage { preparing, processing, completed }
+///
+/// StagedLine<ProcessStage>(
+///   stageState: ProcessStage.processing,
+///   stagesNames: {
+///     ProcessStage.preparing: 'Preparing',
+///     ProcessStage.processing: 'Processing',
+///     ProcessStage.completed: 'Completed',
+///   },
+///   stagesColors: {
+///     ProcessStage.preparing: Colors.blue,
+///     ProcessStage.processing: Colors.orange,
+///     ProcessStage.completed: Colors.green,
+///   },
+///   animationDuration: Duration(milliseconds: 500),
+/// );
+/// ```
+///
+/// ### Constructor Parameters:
+/// - [stageState]: The current process state. Specifies the stage to highlight.
+///   This is a value from the enumeration [T].
+/// - [stagesNames]: A map where each enumeration value [T] corresponds to a stage name.
+///   Used to display text below the stage marker. If a stage is not specified, an empty string is displayed.
+/// - [stagesColors]: (Optional) A map where each enumeration value [T] corresponds to a color.
+///   If not provided, all stages will use the default color: [Colors.green].
+/// - [animationDuration]: (Optional) The duration of the animation for transitions between stages.
+///   Default value: 450 milliseconds.
+///
+/// ### Animations:
+/// - Transitions between stages include a smooth color change for the line.
+/// - The size of the active stage marker increases to emphasize the current stage.
+///
+/// ### Notes:
+/// - The type [T] must be an enumeration (`Enum`).
+/// - The [stagesNames] map should contain keys for all possible values of [T]. If any values are missing,
+///   empty strings will be displayed for those stages.
+/// - If the [stagesColors] map is not provided or does not include specific keys,
+///   the default color ([Colors.green]) will be used for those stages.
 class StagedLine<T extends Enum> extends StatefulWidget {
 
   final T stageState;
