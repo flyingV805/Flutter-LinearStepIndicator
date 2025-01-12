@@ -78,7 +78,6 @@ class StagedLine<T extends Enum> extends StatefulWidget {
 class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTickerProviderStateMixin {
 
   late AnimationController _controller;
-  //late Animation<double> _animation;
   late Map<int, Color> _colors;
   late _StagedLinePainter _painter;
 
@@ -92,7 +91,6 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
     super.initState();
 
     currentStage = widget.stageState as T;
-
     _colors = widget.stagesColors?.map((stage, color) => MapEntry(stage.index, color)) ?? {};
 
     _shouldRepaint = ValueNotifier<_PainterState>(
@@ -159,15 +157,8 @@ class _StagedLineState<T extends Enum> extends State<StagedLine> with SingleTick
         ),
         const SizedBox(height: 8),
         Row(
-          children: widget.stagesNames.values.map(
-            (text) => Expanded(
-              flex: 1,
-              child: Text(
-                text,
-                textAlign: TextAlign.center,
-                //style: Theme.of(context).textTheme.labelSmall,
-              )
-            )
+          children: widget.stagesNames.values.map((text) =>
+            Expanded(child: Text(text, textAlign: TextAlign.center))
           ).toList()
         ),
       ],
